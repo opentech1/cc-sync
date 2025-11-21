@@ -34,7 +34,7 @@
     },
     "apps/cli": {
       "name": "@opentech1/cc-sync",
-      "version": "0.1.0",
+      "version": "0.1.1",
       "bin": {
         "cc-sync": "./dist/index.js",
       },
@@ -45,6 +45,7 @@
         "ink-text-input": "^6.0.0",
         "keytar": "^7.9.0",
         "react": "^18.2.0",
+        "yoga-wasm-web": "^0.3.3",
       },
       "devDependencies": {
         "@types/bun": "latest",
