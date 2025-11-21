@@ -5,12 +5,14 @@ import { ConvexBetterAuthProvider } from "@convex-dev/better-auth/react";
 import { ReactNode } from "react";
 import { ConvexReactClient } from "convex/react";
 
-const convex = new ConvexReactClient(
-  process.env.NEXT_PUBLIC_CONVEX_URL || "https://hardy-greyhound-996.convex.cloud",
-  {
-    expectAuth: true,
-  },
-);
+// Normalize URL by removing trailing slash
+const convexUrl = (
+  process.env.NEXT_PUBLIC_CONVEX_URL || "https://beloved-poodle-251.convex.cloud"
+).replace(/\/$/, "");
+
+const convex = new ConvexReactClient(convexUrl, {
+  expectAuth: true,
+});
 
 export default function ConvexClientProvider({
   children,
