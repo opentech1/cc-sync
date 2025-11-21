@@ -16,6 +16,9 @@
     "start": "bun run dist/index.js",
     "type-check": "tsc --noEmit",
     "test:sync": "bun run src/test-sync.ts",
+    "deploy": "bun run scripts/deploy.ts",
+    "deploy:minor": "bun run scripts/deploy.ts minor",
+    "deploy:major": "bun run scripts/deploy.ts major",
     "prepublishOnly": "bun run build"
   },
   "keywords": [
