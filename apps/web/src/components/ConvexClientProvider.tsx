@@ -5,10 +5,12 @@ import { ConvexBetterAuthProvider } from "@convex-dev/better-auth/react";
 import { ReactNode } from "react";
 import { ConvexReactClient } from "convex/react";
 
-// Normalize URL by removing trailing slash
-const convexUrl = (
-  process.env.NEXT_PUBLIC_CONVEX_URL || "https://beloved-poodle-251.convex.cloud"
-).replace(/\/$/, "");
+// Normalize URL: remove trailing slash and fix .convex.site -> .convex.cloud
+// The database URL should use .convex.cloud, not .convex.site (which is for HTTP actions)
+const rawUrl = process.env.NEXT_PUBLIC_CONVEX_URL || "https://beloved-poodle-251.convex.cloud";
+const convexUrl = rawUrl
+  .replace(/\/$/, "")
+  .replace(/\.convex\.site$/, ".convex.cloud");
 
 const convex = new ConvexReactClient(convexUrl, {
   expectAuth: true,
