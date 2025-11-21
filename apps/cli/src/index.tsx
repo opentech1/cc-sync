@@ -13,7 +13,7 @@ import { CONVEX_URL, AUTH_WEB_URL } from "./config";
 import os from "os";
 
 const PACKAGE_NAME = "@opentech1/cc-sync";
-const CURRENT_VERSION = "0.1.7";
+const CURRENT_VERSION = "0.1.8";
 
 const convex = new ConvexReactClient(CONVEX_URL);
 const DEVICE_ID = os.hostname(); // Simple device ID for now
@@ -22,6 +22,7 @@ const DEVICE_ID = os.hostname(); // Simple device ID for now
 const args = process.argv.slice(2);
 const command = args[0];
 const flags = args.slice(1);
+const skipUpdate = flags.includes("--skip-update") || flags.includes("-s");
 
 function App() {
   const [view, setView] = useState<"home" | "sync" | "settings" | "login" | "loading" | "update">("loading");
@@ -39,6 +40,12 @@ function App() {
   // Check for updates on startup
   useEffect(() => {
     const checkForUpdates = async () => {
+      // Skip update check if flag is set
+      if (skipUpdate) {
+        loadApiKey();
+        return;
+      }
+
       try {
         const response = await fetch(`https://registry.npmjs.org/${PACKAGE_NAME}/latest`);
         if (response.ok) {
@@ -265,6 +272,9 @@ function App() {
     if (view === "update") {
       if (key.return && !isUpdating) {
         performUpdate();
+      } else if (input === "s" && !isUpdating) {
+        // Skip update and continue
+        loadApiKey();
       }
     } else if (view === "home") {
       if (input === "1") {
@@ -337,11 +347,15 @@ function App() {
           </Box>
         ) : (
           <Box marginTop={1} flexDirection="column">
-            <Text>Please update to continue.</Text>
             <Box marginTop={1}>
               <Text dimColor>Press </Text>
               <Text bold color="green">Enter</Text>
               <Text dimColor> to update now</Text>
+            </Box>
+            <Box>
+              <Text dimColor>Press </Text>
+              <Text bold color="yellow">s</Text>
+              <Text dimColor> to skip (npm may still be propagating)</Text>
             </Box>
           </Box>
         )}
