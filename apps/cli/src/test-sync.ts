@@ -8,7 +8,7 @@ import fs from "fs";
 import path from "path";
 import os from "os";
 import { ConvexReactClient } from "convex/react";
-import { api } from "../../convex-backend/convex/_generated/api";
+import { api } from "../../backend/convex/_generated/api";
 import { readLocalFiles, writeLocalFiles } from "./sync-utils";
 
 const CONVEX_URL = process.env.CONVEX_URL || "https://hardy-greyhound-996.convex.cloud";
