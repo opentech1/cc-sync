@@ -13,7 +13,7 @@ import { CONVEX_URL, AUTH_WEB_URL } from "./config";
 import os from "os";
 
 const PACKAGE_NAME = "@opentech1/cc-sync";
-const CURRENT_VERSION = "0.1.6";
+const CURRENT_VERSION = "0.1.7";
 
 const convex = new ConvexReactClient(CONVEX_URL);
 const DEVICE_ID = os.hostname(); // Simple device ID for now
@@ -301,21 +301,6 @@ function App() {
     } else if (view === "settings") {
       if (input === "b") {
         setView("home");
-      } else if (input === "x") {
-        // Clear all synced files
-        if (savedApiKey) {
-          setSyncStatus("syncing");
-          setSyncMessage("Clearing all synced files...");
-          convex.mutation(api.sync.clearAllFiles, { apiKey: savedApiKey })
-            .then((result) => {
-              setSyncStatus("success");
-              setSyncMessage(`✓ Cleared ${result.deletedCount} files from database`);
-            })
-            .catch((error) => {
-              setSyncStatus("error");
-              setSyncMessage(error instanceof Error ? error.message : "Failed to clear files");
-            });
-        }
       }
     } else if (view === "login") {
       if (key.escape) {
@@ -496,12 +481,6 @@ function App() {
             <Text color="red">✗ {syncMessage}</Text>
           </Box>
         )}
-
-        <Box marginTop={1}>
-          <Text dimColor>Press </Text>
-          <Text bold color="red">x</Text>
-          <Text dimColor> to clear all synced files (for testing)</Text>
-        </Box>
 
         <Box marginTop={1}>
           <Text dimColor>Press </Text>
