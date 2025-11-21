@@ -256,3 +256,4 @@ MIT
 - Auth powered by [Better Auth](https://better-auth.com)
 - CLI powered by [OpenTUI](https://github.com/opentui/opentui)
 - Monorepo managed by [TurboRepo](https://turbo.build)
+# trigger redeploy Fri Nov 21 16:21:15 EST 2025
