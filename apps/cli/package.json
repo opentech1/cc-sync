@@ -1,5 +1,5 @@
 {
-  "name": "@gl1tchblade/cc-sync",
+  "name": "@opentech1/cc-sync",
   "version": "0.1.0",
   "description": "Claude Code configuration sync across devices",
   "type": "module",
@@ -25,7 +25,7 @@
     "configuration",
     "cli"
   ],
-  "author": "Anthropic",
+  "author": "opentech1",
   "license": "MIT",
   "repository": {
     "type": "git",
