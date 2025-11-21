@@ -2,9 +2,11 @@
 // The original nextJsHandler forwards the Host header from the incoming request,
 // which causes Convex to reject the request with a 404.
 
-const CONVEX_SITE_URL =
+// Remove trailing slash if present
+const CONVEX_SITE_URL = (
   process.env.NEXT_PUBLIC_CONVEX_SITE_URL ||
-  "https://beloved-poodle-251.convex.site";
+  "https://beloved-poodle-251.convex.site"
+).replace(/\/$/, "");
 
 const handler = async (request: Request) => {
   const requestUrl = new URL(request.url);
