@@ -1,6 +1,6 @@
 {
   "name": "@opentech1/cc-sync",
-  "version": "0.1.2",
+  "version": "0.1.3",
   "description": "Claude Code configuration sync across devices",
   "type": "module",
   "bin": {
