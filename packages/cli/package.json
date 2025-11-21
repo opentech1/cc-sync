@@ -1,0 +1,51 @@
+{
+  "name": "@opentech1/cc-sync",
+  "version": "0.1.0",
+  "description": "Claude Code configuration sync across devices",
+  "type": "module",
+  "bin": {
+    "cc-sync": "./dist/index.js"
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "dev": "bun run src/index.tsx",
+    "dev:watch": "bun run --watch src/index.tsx",
+    "build": "bun build src/index.tsx --outdir dist --target bun && bun build src/daemon.ts --outdir dist --target bun",
+    "start": "bun run dist/index.js",
+    "type-check": "tsc --noEmit",
+    "test:sync": "bun run src/test-sync.ts",
+    "prepublishOnly": "bun run build"
+  },
+  "keywords": [
+    "claude",
+    "claude-code",
+    "sync",
+    "configuration",
+    "cli"
+  ],
+  "author": "Anthropic",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/opentech1/cc-sync.git",
+    "directory": "packages/cli"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "dependencies": {
+    "chokidar": "^4.0.3",
+    "convex": "^1.29.1",
+    "ink": "^4.4.1",
+    "ink-text-input": "^6.0.0",
+    "keytar": "^7.9.0",
+    "react": "^18.2.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20",
+    "typescript": "^5.9.3",
+    "@types/bun": "latest"
+  }
+}

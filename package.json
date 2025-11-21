@@ -1,0 +1,23 @@
+{
+  "name": "cc-sync",
+  "version": "0.1.0",
+  "private": true,
+  "workspaces": [
+    "packages/*"
+  ],
+  "scripts": {
+    "dev": "turbo run dev",
+    "dev:cli": "cd packages/cli && bun run src/index.tsx",
+    "dev:convex": "cd packages/convex-backend && npx convex dev",
+    "dev:web": "cd packages/auth-web && bun run dev",
+    "build": "turbo run build",
+    "clean": "turbo run clean && rm -rf node_modules",
+    "type-check": "turbo run type-check"
+  },
+  "devDependencies": {
+    "@types/bun": "latest",
+    "turbo": "^2.6.1",
+    "typescript": "^5.9.3"
+  },
+  "packageManager": "bun@1.3.1"
+}
