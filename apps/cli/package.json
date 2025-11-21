@@ -1,5 +1,5 @@
 {
-  "name": "@opentech1/cc-sync",
+  "name": "@gl1tchblade/cc-sync",
   "version": "0.1.0",
   "description": "Claude Code configuration sync across devices",
   "type": "module",
