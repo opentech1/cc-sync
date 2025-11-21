@@ -13,7 +13,7 @@ import { CONVEX_URL, AUTH_WEB_URL } from "./config";
 import os from "os";
 
 const PACKAGE_NAME = "@opentech1/cc-sync";
-const CURRENT_VERSION = "0.1.5";
+const CURRENT_VERSION = "0.1.6";
 
 const convex = new ConvexReactClient(CONVEX_URL);
 const DEVICE_ID = os.hostname(); // Simple device ID for now
@@ -108,10 +108,24 @@ function App() {
 
   const performUpdate = () => {
     setIsUpdating(true);
-    exec(`npm install -g ${PACKAGE_NAME}@latest`, (error, stdout, stderr) => {
+
+    // Detect package manager - check if running via bunx or bun
+    const isBun = process.argv[0]?.includes("bun") || process.env.BUN_INSTALL;
+
+    // For bunx, we need to clear the cache and re-run
+    // For npm/bun global, we update the global package
+    const updateCmd = isBun
+      ? `bun pm cache rm && bun add -g ${PACKAGE_NAME}@latest`
+      : `npm install -g ${PACKAGE_NAME}@latest`;
+
+    const manualCmd = isBun
+      ? `bunx --bun ${PACKAGE_NAME}@latest`
+      : `npm install -g ${PACKAGE_NAME}`;
+
+    exec(updateCmd, (error, stdout, stderr) => {
       if (error) {
         console.error("Update failed:", error.message);
-        console.log("Try running manually: npm install -g @opentech1/cc-sync");
+        console.log(`Try running manually: ${manualCmd}`);
         exit();
       } else {
         console.log("\n✓ Updated to latest version!");
