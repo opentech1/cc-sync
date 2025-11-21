@@ -1,6 +1,6 @@
 export async function GET(request: Request) {
   const requestUrl = new URL(request.url);
-  const convexSiteUrl = process.env.NEXT_PUBLIC_CONVEX_SITE_URL || "https://beloved-poodle-251.convex.site";
+  const convexSiteUrl = (process.env.NEXT_PUBLIC_CONVEX_SITE_URL || "https://beloved-poodle-251.convex.site").replace(/\/$/, "");
 
   // Test what URL would be constructed for auth
   const testPath = "/api/auth/get-session";
