@@ -6,7 +6,7 @@ import { ConvexProvider } from "convex/react";
 import { exec } from "child_process";
 import TextInput from "ink-text-input";
 import keytar from "keytar";
-import { api } from "../../convex-backend/convex/_generated/api";
+import { api } from "../../backend/convex/_generated/api";
 import { readLocalFiles, writeLocalFiles } from "./sync-utils";
 import { getDaemonStatus, startDaemon, stopDaemon, restartDaemon, getLogs, clearLogs } from "./daemon-manager";
 import { CONVEX_URL, AUTH_WEB_URL } from "./config";

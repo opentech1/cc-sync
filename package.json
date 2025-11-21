@@ -3,13 +3,14 @@
   "version": "0.1.0",
   "private": true,
   "workspaces": [
+    "apps/*",
     "packages/*"
   ],
   "scripts": {
     "dev": "turbo run dev",
-    "dev:cli": "cd packages/cli && bun run src/index.tsx",
-    "dev:convex": "cd packages/convex-backend && npx convex dev",
-    "dev:web": "cd packages/auth-web && bun run dev",
+    "dev:cli": "cd apps/cli && bun run src/index.tsx",
+    "dev:convex": "cd apps/backend && npx convex dev",
+    "dev:web": "cd apps/web && bun run dev",
     "build": "turbo run build",
     "clean": "turbo run clean && rm -rf node_modules",
     "type-check": "turbo run type-check"

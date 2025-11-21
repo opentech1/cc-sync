@@ -3,7 +3,7 @@
  */
 
 import { ConvexHttpClient, ConvexClient } from "convex/browser";
-import { api } from "../../convex-backend/convex/_generated/api";
+import { api } from "../../backend/convex/_generated/api";
 import { readLocalFiles, writeLocalFiles } from "./sync-utils";
 import os from "os";
 import fs from "fs";
