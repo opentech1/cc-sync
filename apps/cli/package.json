@@ -1,6 +1,6 @@
 {
   "name": "@opentech1/cc-sync",
-  "version": "0.1.4",
+  "version": "0.1.5",
   "description": "Claude Code configuration sync across devices",
   "type": "module",
   "bin": {
@@ -40,9 +40,11 @@
     "convex": "^1.29.1",
     "ink": "^4.4.1",
     "ink-text-input": "^6.0.0",
-    "keytar": "^7.9.0",
     "react": "^18.2.0",
     "yoga-wasm-web": "^0.3.3"
+  },
+  "optionalDependencies": {
+    "keytar": "^7.9.0"
   },
   "devDependencies": {
     "@types/bun": "latest",

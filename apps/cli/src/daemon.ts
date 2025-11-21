@@ -7,13 +7,11 @@
 import fs from "fs";
 import path from "path";
 import os from "os";
-import keytar from "keytar";
+import { getCredential, getStorageWarning } from "./credentials";
 import { createWatcher, stopWatcher } from "./watcher";
 import { SyncEngine } from "./sync-engine";
 import { CONVEX_URL } from "./config";
 
-const SERVICE_NAME = "cc-sync";
-const ACCOUNT_NAME = "api_key";
 const DEVICE_ID = os.hostname();
 
 // Daemon state directory
@@ -61,9 +59,13 @@ async function main() {
   // Load API key
   let apiKey: string | null = null;
   try {
-    apiKey = await keytar.getPassword(SERVICE_NAME, ACCOUNT_NAME);
+    apiKey = await getCredential();
+    const storageWarning = getStorageWarning();
+    if (storageWarning) {
+      log(`Note: ${storageWarning}`);
+    }
   } catch (error) {
-    log("Failed to load API key from keychain");
+    log("Failed to load API key");
   }
 
   if (!apiKey) {

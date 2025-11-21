@@ -5,7 +5,7 @@ import { useQuery, useMutation } from "convex/react";
 import { ConvexProvider } from "convex/react";
 import { exec, execSync } from "child_process";
 import TextInput from "ink-text-input";
-import keytar from "keytar";
+import { getCredential, setCredential, getStorageWarning } from "./credentials";
 import { api } from "../../backend/convex/_generated/api";
 import { readLocalFiles, writeLocalFiles } from "./sync-utils";
 import { getDaemonStatus, startDaemon, stopDaemon, restartDaemon, getLogs, clearLogs } from "./daemon-manager";
@@ -13,11 +13,9 @@ import { CONVEX_URL, AUTH_WEB_URL } from "./config";
 import os from "os";
 
 const PACKAGE_NAME = "@opentech1/cc-sync";
-const CURRENT_VERSION = "0.1.3";
+const CURRENT_VERSION = "0.1.5";
 
 const convex = new ConvexReactClient(CONVEX_URL);
-const SERVICE_NAME = "cc-sync";
-const ACCOUNT_NAME = "api_key";
 const DEVICE_ID = os.hostname(); // Simple device ID for now
 
 // CLI Arguments handling
@@ -77,7 +75,7 @@ function App() {
 
   const loadApiKey = async () => {
     try {
-      const key = await keytar.getPassword(SERVICE_NAME, ACCOUNT_NAME);
+      const key = await getCredential();
       if (key) {
         setSavedApiKey(key);
         setApiKey(key);
@@ -372,7 +370,7 @@ function App() {
             onChange={setApiKey}
             onSubmit={async (value) => {
               if (value.trim()) {
-                await keytar.setPassword(SERVICE_NAME, ACCOUNT_NAME, value.trim());
+                await setCredential(value.trim());
                 setSavedApiKey(value.trim());
                 setView("home");
               }
