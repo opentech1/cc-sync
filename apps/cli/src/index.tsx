@@ -3,7 +3,7 @@ import React, { useState, useEffect } from "react";
 import { ConvexReactClient } from "convex/react";
 import { useQuery, useMutation } from "convex/react";
 import { ConvexProvider } from "convex/react";
-import { exec } from "child_process";
+import { exec, execSync } from "child_process";
 import TextInput from "ink-text-input";
 import keytar from "keytar";
 import { api } from "../../backend/convex/_generated/api";
@@ -11,6 +11,10 @@ import { readLocalFiles, writeLocalFiles } from "./sync-utils";
 import { getDaemonStatus, startDaemon, stopDaemon, restartDaemon, getLogs, clearLogs } from "./daemon-manager";
 import { CONVEX_URL, AUTH_WEB_URL } from "./config";
 import os from "os";
+
+const PACKAGE_NAME = "@opentech1/cc-sync";
+const CURRENT_VERSION = "0.1.3";
+
 const convex = new ConvexReactClient(CONVEX_URL);
 const SERVICE_NAME = "cc-sync";
 const ACCOUNT_NAME = "api_key";
@@ -22,7 +26,7 @@ const command = args[0];
 const flags = args.slice(1);
 
 function App() {
-  const [view, setView] = useState<"home" | "sync" | "settings" | "login" | "loading">("loading");
+  const [view, setView] = useState<"home" | "sync" | "settings" | "login" | "loading" | "update">("loading");
   const [convexStatus, setConvexStatus] = useState<"checking" | "connected" | "disconnected">("checking");
   const [apiKey, setApiKey] = useState("");
   const [savedApiKey, setSavedApiKey] = useState<string | null>(null);
@@ -30,45 +34,95 @@ function App() {
   const [syncMessage, setSyncMessage] = useState("");
   const [lastSyncTime, setLastSyncTime] = useState<number | null>(null);
   const [lastSyncAttempt, setLastSyncAttempt] = useState<number>(0);
+  const [latestVersion, setLatestVersion] = useState<string | null>(null);
+  const [isUpdating, setIsUpdating] = useState(false);
   const { exit } = useApp();
 
-
-  // Load saved API key - redirect to login if none found
+  // Check for updates on startup
   useEffect(() => {
-    const loadKey = async () => {
+    const checkForUpdates = async () => {
       try {
-        const key = await keytar.getPassword(SERVICE_NAME, ACCOUNT_NAME);
-        if (key) {
-          setSavedApiKey(key);
-          setApiKey(key);
-          // Only go to home if we have a key
-          if (command === "login" || (command === "auth" && args[1] === "login")) {
-            exec(`open "${AUTH_WEB_URL}"`);
-            setView("login");
-          } else if (command === "sync") {
-            setView("sync");
-          } else {
-            setView("home");
-          }
-        } else {
-          // No API key - show login screen
-          if (command === "sync") {
-            console.error("Error: Not logged in. Run 'cc-sync login' first.");
-            exit();
-          } else {
-            // Auto-open login page and switch to login view
-            exec(`open "${AUTH_WEB_URL}"`);
-            setView("login");
+        const response = await fetch(`https://registry.npmjs.org/${PACKAGE_NAME}/latest`);
+        if (response.ok) {
+          const data = await response.json();
+          const latest = data.version;
+          if (latest && latest !== CURRENT_VERSION) {
+            // Compare versions - simple check if latest is greater
+            const currentParts = CURRENT_VERSION.split('.').map(Number);
+            const latestParts = latest.split('.').map(Number);
+            let needsUpdate = false;
+            for (let i = 0; i < 3; i++) {
+              if (latestParts[i] > currentParts[i]) {
+                needsUpdate = true;
+                break;
+              } else if (latestParts[i] < currentParts[i]) {
+                break;
+              }
+            }
+            if (needsUpdate) {
+              setLatestVersion(latest);
+              setView("update");
+              return;
+            }
           }
         }
       } catch (error) {
-        // Error loading key - go to login
-        exec(`open "${AUTH_WEB_URL}"`);
-        setView("login");
+        // Silently fail - don't block if version check fails
       }
+      // Continue with normal flow
+      loadApiKey();
     };
-    loadKey();
+    checkForUpdates();
   }, []);
+
+  const loadApiKey = async () => {
+    try {
+      const key = await keytar.getPassword(SERVICE_NAME, ACCOUNT_NAME);
+      if (key) {
+        setSavedApiKey(key);
+        setApiKey(key);
+        // Only go to home if we have a key
+        if (command === "login" || (command === "auth" && args[1] === "login")) {
+          exec(`open "${AUTH_WEB_URL}"`);
+          setView("login");
+        } else if (command === "sync") {
+          setView("sync");
+        } else {
+          setView("home");
+        }
+      } else {
+        // No API key - show login screen
+        if (command === "sync") {
+          console.error("Error: Not logged in. Run 'cc-sync login' first.");
+          exit();
+        } else {
+          // Auto-open login page and switch to login view
+          exec(`open "${AUTH_WEB_URL}"`);
+          setView("login");
+        }
+      }
+    } catch (error) {
+      // Error loading key - go to login
+      exec(`open "${AUTH_WEB_URL}"`);
+      setView("login");
+    }
+  };
+
+  const performUpdate = () => {
+    setIsUpdating(true);
+    exec(`npm install -g ${PACKAGE_NAME}@latest`, (error, stdout, stderr) => {
+      if (error) {
+        console.error("Update failed:", error.message);
+        console.log("Try running manually: npm install -g @opentech1/cc-sync");
+        exit();
+      } else {
+        console.log("\n✓ Updated to latest version!");
+        console.log("Please restart cc-sync to use the new version.\n");
+        exit();
+      }
+    });
+  };
+
 
   // Auto-sync when entering sync view with 'sync' command
   // Disabled to prevent rate limit errors on launch
@@ -196,7 +250,11 @@ function App() {
   };
 
   useInput((input, key) => {
-    if (view === "home") {
+    if (view === "update") {
+      if (key.return && !isUpdating) {
+        performUpdate();
+      }
+    } else if (view === "home") {
       if (input === "1") {
         const url = AUTH_WEB_URL;
         exec(`open "${url}"`);
@@ -258,6 +316,38 @@ function App() {
     return (
       <Box flexDirection="column" width={60} paddingX={2} paddingY={1}>
         <Text dimColor>Loading...</Text>
+      </Box>
+    );
+  }
+
+  if (view === "update") {
+    return (
+      <Box flexDirection="column" width={60} paddingX={2} paddingY={1}>
+        <Box justifyContent="center" marginBottom={1}>
+          <Text bold color="yellow">Update Available</Text>
+        </Box>
+
+        <Box borderStyle="round" borderColor="yellow" padding={1}>
+          <Box flexDirection="column">
+            <Text>Current version: <Text color="red">{CURRENT_VERSION}</Text></Text>
+            <Text>Latest version:  <Text color="green">{latestVersion}</Text></Text>
+          </Box>
+        </Box>
+
+        {isUpdating ? (
+          <Box marginTop={1}>
+            <Text color="yellow">Updating... please wait</Text>
+          </Box>
+        ) : (
+          <Box marginTop={1} flexDirection="column">
+            <Text>Please update to continue.</Text>
+            <Box marginTop={1}>
+              <Text dimColor>Press </Text>
+              <Text bold color="green">Enter</Text>
+              <Text dimColor> to update now</Text>
+            </Box>
+          </Box>
+        )}
       </Box>
     );
   }
