@@ -22,7 +22,7 @@ const command = args[0];
 const flags = args.slice(1);
 
 function App() {
-  const [view, setView] = useState<"home" | "sync" | "settings" | "login">("home");
+  const [view, setView] = useState<"home" | "sync" | "settings" | "login" | "loading">("loading");
   const [convexStatus, setConvexStatus] = useState<"checking" | "connected" | "disconnected">("checking");
   const [apiKey, setApiKey] = useState("");
   const [savedApiKey, setSavedApiKey] = useState<string | null>(null);
@@ -32,21 +32,8 @@ function App() {
   const [lastSyncAttempt, setLastSyncAttempt] = useState<number>(0);
   const { exit } = useApp();
 
-  // Handle initial command
-  useEffect(() => {
-    if (command === "login" || (command === "auth" && args[1] === "login")) {
-        const provider = flags.includes("--github") ? "github" : flags.includes("--google") ? "google" : null;
-        const url = provider ? `${AUTH_WEB_URL}/auth/${provider}` : AUTH_WEB_URL;
 
-        exec(`open "${url}"`);
-        setView("login");
-    } else if (command === "sync") {
-        setView("sync");
-        // We need to wait for key load then sync
-    }
-  }, []);
-
-  // Load saved API key
+  // Load saved API key - redirect to login if none found
   useEffect(() => {
     const loadKey = async () => {
       try {
@@ -54,12 +41,30 @@ function App() {
         if (key) {
           setSavedApiKey(key);
           setApiKey(key);
-        } else if (command === "sync") {
+          // Only go to home if we have a key
+          if (command === "login" || (command === "auth" && args[1] === "login")) {
+            exec(`open "${AUTH_WEB_URL}"`);
+            setView("login");
+          } else if (command === "sync") {
+            setView("sync");
+          } else {
+            setView("home");
+          }
+        } else {
+          // No API key - show login screen
+          if (command === "sync") {
             console.error("Error: Not logged in. Run 'cc-sync login' first.");
             exit();
+          } else {
+            // Auto-open login page and switch to login view
+            exec(`open "${AUTH_WEB_URL}"`);
+            setView("login");
+          }
         }
       } catch (error) {
-        // Ignore error
+        // Error loading key - go to login
+        exec(`open "${AUTH_WEB_URL}"`);
+        setView("login");
       }
     };
     loadKey();
@@ -248,6 +253,14 @@ function App() {
       }
     }
   });
+
+  if (view === "loading") {
+    return (
+      <Box flexDirection="column" width={60} paddingX={2} paddingY={1}>
+        <Text dimColor>Loading...</Text>
+      </Box>
+    );
+  }
 
   if (view === "login") {
     return (
