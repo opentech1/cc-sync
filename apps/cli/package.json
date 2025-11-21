@@ -1,6 +1,6 @@
 {
   "name": "@opentech1/cc-sync",
-  "version": "0.1.3",
+  "version": "0.1.4",
   "description": "Claude Code configuration sync across devices",
   "type": "module",
   "bin": {
@@ -12,7 +12,7 @@
   "scripts": {
     "dev": "bun run src/index.tsx",
     "dev:watch": "bun run --watch src/index.tsx",
-    "build": "bun build src/index.tsx --outdir dist --target node --external yoga-wasm-web && bun build src/daemon.ts --outdir dist --target node && echo '#!/usr/bin/env node' | cat - dist/index.js > dist/index.tmp && mv dist/index.tmp dist/index.js && chmod +x dist/index.js",
+    "build": "bun build src/index.tsx --outdir dist --target node --external yoga-wasm-web --external keytar && bun build src/daemon.ts --outdir dist --target node --external keytar && echo '#!/usr/bin/env node' | cat - dist/index.js > dist/index.tmp && mv dist/index.tmp dist/index.js && chmod +x dist/index.js",
     "start": "bun run dist/index.js",
     "type-check": "tsc --noEmit",
     "test:sync": "bun run src/test-sync.ts",
