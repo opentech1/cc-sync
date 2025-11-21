@@ -15,12 +15,54 @@ const EXCLUDED_DIRS = new Set([
   "shell-snapshots",
   "local",
   "statsig",
-  "projects",  // Exclude project transcripts (can be huge)
 ]);
 
 // Directories to limit to recent files only
 const LIMITED_DIRS = new Set(["todos", "session-env"]);
 const MAX_RECENT_FILES = 10;
+
+// Special handling for projects directory - sync recent sessions across all projects
+const MAX_RECENT_SESSIONS = 10;
+
+// Function to get the N most recent session files across all projects
+function getRecentSessions(projectsPath: string, limit: number): Array<{
+  fullPath: string;
+  relPath: string;
+  mtime: number;
+}> {
+  if (!fs.existsSync(projectsPath)) return [];
+
+  const allSessions: Array<{ fullPath: string; relPath: string; mtime: number }> = [];
+
+  // Iterate through all project directories
+  const projectDirs = fs.readdirSync(projectsPath);
+  for (const projectDir of projectDirs) {
+    const projectPath = path.join(projectsPath, projectDir);
+    const stat = fs.statSync(projectPath);
+
+    if (!stat.isDirectory()) continue;
+
+    // Find session files (UUID.jsonl, not agent-*.jsonl)
+    const files = fs.readdirSync(projectPath);
+    for (const file of files) {
+      // Only sync main session files (UUID format), skip agent files
+      if (file.endsWith(".jsonl") && !file.startsWith("agent-")) {
+        const fullPath = path.join(projectPath, file);
+        const fileStat = fs.statSync(fullPath);
+        allSessions.push({
+          fullPath,
+          relPath: path.join("projects", projectDir, file),
+          mtime: fileStat.mtimeMs,
+        });
+      }
+    }
+  }
+
+  // Sort by modification time and return the most recent
+  return allSessions
+    .sort((a, b) => b.mtime - a.mtime)
+    .slice(0, limit);
+}
 
 // Function to read local files from ~/.claude/
 export function readLocalFiles(syncPath: string): Array<{
@@ -76,6 +118,25 @@ export function readLocalFiles(syncPath: string): Array<{
   function traverseDir(currentPath: string, relativePath: string, currentDirName?: string) {
     // Skip excluded directories
     if (currentDirName && EXCLUDED_DIRS.has(currentDirName)) {
+      return;
+    }
+
+    // Special handling for projects directory - sync recent sessions across all projects
+    if (currentDirName === "projects") {
+      const recentSessions = getRecentSessions(currentPath, MAX_RECENT_SESSIONS);
+      for (const session of recentSessions) {
+        try {
+          const content = fs.readFileSync(session.fullPath, "utf-8");
+          results.push({
+            filePath: session.relPath,
+            content,
+            contentHash: computeHash(content),
+            lastModified: session.mtime,
+          });
+        } catch (error) {
+          // Skip files that can't be read
+        }
+      }
       return;
     }
 
